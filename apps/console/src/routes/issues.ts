@@ -19,7 +19,14 @@ router.get('/', async (req: Request, res: Response) => {
                 createdAt: 'desc'
             }
         });
-        res.json(issues);
+
+        // Ensure impact is returned
+        const mappedIssues = issues.map(issue => ({
+            ...issue,
+            impact: issue.impact ?? (issue.severity === 'High' ? 5.6 : issue.severity === 'Medium' ? 3.1 : 1.0)
+        }));
+
+        res.json(mappedIssues);
     } catch (error) {
         console.error('Error fetching issues:', error);
         res.status(500).json({ error: 'Internal server error' });

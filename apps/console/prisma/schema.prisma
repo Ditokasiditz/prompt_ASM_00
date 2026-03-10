@@ -34,6 +34,7 @@ model Issue {
   title       String
   description String?
   severity    String   // e.g., "Critical", "High", "Medium", "Low"
+  impact      Float?   // Score out of 10.0
   status      String   @default("Open") // "Open", "Resolved"
   assetId     Int?
   asset       Asset?   @relation(fields: [assetId], references: [id])
