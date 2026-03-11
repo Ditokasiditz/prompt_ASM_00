@@ -160,8 +160,8 @@ export default function IssuesPage() {
                                     <TableCell className="text-muted-foreground">{row.impact ?? '—'}</TableCell>
                                     <TableCell>
                                         <button
-                                            onClick={() => router.push(`/issues/${row.id}`)}
-                                            className="font-semibold text-blue-600 hover:underline"
+                                            onClick={() => router.push("/issues/" + encodeURIComponent(row.title))}
+                                            className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
                                         >
                                             {row.findingsCount}
                                         </button>

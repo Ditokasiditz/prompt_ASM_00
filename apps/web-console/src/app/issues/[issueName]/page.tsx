@@ -164,7 +164,7 @@ function CommentPopup({
 export default function IssueFindingsPage() {
     const params = useParams()
     const router = useRouter()
-    const issueId = params.issueId as string
+    const issueName = decodeURIComponent(params.issueName as string)
 
     const [issue, setIssue] = useState<IssueDetail | null>(null)
     const [loading, setLoading] = useState(true)
@@ -175,8 +175,8 @@ export default function IssueFindingsPage() {
     const [activeCommentAssetId, setActiveCommentAssetId] = useState<number | null>(null)
 
     useEffect(() => {
-        if (!issueId) return
-        fetch(`${API}/api/issues/${issueId}`)
+        if (!issueName) return
+        fetch(`${API}/api/issues/by-name/${encodeURIComponent(issueName)}`)
             .then(res => {
                 if (!res.ok) throw new Error('Issue not found')
                 return res.json()
@@ -194,7 +194,7 @@ export default function IssueFindingsPage() {
                 setError('Failed to load issue details.')
                 setLoading(false)
             })
-    }, [issueId])
+    }, [issueName])
 
     const navigations = [
         { title: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -211,9 +211,9 @@ export default function IssueFindingsPage() {
             <Sidebar navigations={navigations} />
 
             {/* Comment popup */}
-            {activeCommentAssetId !== null && activeAsset && (
+            {activeCommentAssetId !== null && activeAsset && issue && (
                 <CommentPopup
-                    issueId={issueId}
+                    issueId={issue.id.toString()}
                     assetId={activeCommentAssetId}
                     comment={comments[activeCommentAssetId] ?? ''}
                     onSave={(text) => {
