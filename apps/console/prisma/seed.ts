@@ -4,7 +4,7 @@ import "dotenv/config";
 const prisma = new PrismaClient()
 
 const dummyFactors = [
-    { title: "Network Security", score: 99, issueCount: 4 },
+    { title: "Network Security", score: 65, issueCount: 4 },
     { title: "DNS Health", score: 90, issueCount: 0 },
     { title: "Patching Cadence", score: 40, issueCount: 12 },
     { title: "Application Security", score: 85, issueCount: 2 },
@@ -15,36 +15,121 @@ const dummyFactors = [
 async function main() {
     console.log(`Start seeding ...`)
 
-    // Clear existing data
-    await prisma.factor.deleteMany()
+    // Clear existing data in correct order (join table first)
+    await prisma.issueOnAsset.deleteMany()
     await prisma.issue.deleteMany()
     await prisma.asset.deleteMany()
+    await prisma.factor.deleteMany()
 
     // Seed Factors
     for (const factor of dummyFactors) {
-        const createdFactor = await prisma.factor.create({
-            data: factor,
-        })
-        console.log(`Created factor with id: ${createdFactor.id}`)
+        await prisma.factor.create({ data: factor })
     }
+    console.log(`Created ${dummyFactors.length} factors`)
 
-    // Seed some dummy assets
-    const asset1 = await prisma.asset.create({
-        data: {
-            hostname: "api.example.com",
-            ipAddress: "192.168.1.10",
-            type: "domain",
-            isExposed: true,
-            issues: {
-                create: [
-                    { title: "Open Port 22", severity: "High", status: "Open" },
-                    { title: "Outdated TLS Version", severity: "Medium", status: "Open" }
-                ]
-            }
+    // Create Assets
+    const assets = await Promise.all([
+        prisma.asset.create({ data: { hostname: "api.example.com", ipAddress: "192.168.1.10", type: "domain", isExposed: true } }),
+        prisma.asset.create({ data: { hostname: "mail.example.com", ipAddress: "192.168.1.11", type: "domain", isExposed: true } }),
+        prisma.asset.create({ data: { hostname: "vpn.example.com", ipAddress: "10.0.0.1", type: "domain", isExposed: true } }),
+        prisma.asset.create({ data: { hostname: "blog.example.com", ipAddress: "192.168.1.12", type: "subdomain", isExposed: false } }),
+        prisma.asset.create({ data: { hostname: "staging.example.com", ipAddress: "10.10.0.5", type: "subdomain", isExposed: true } }),
+        prisma.asset.create({ data: { hostname: "erp.example.com", ipAddress: "192.168.2.20", type: "domain", isExposed: true } }),
+    ])
+    console.log(`Created ${assets.length} assets`)
+
+    // Create Issues (many-to-many with assets)
+    const issueDefinitions = [
+        {
+            title: "Open Port 22 (SSH)",
+            description: "SSH port is open and exposed to the internet without IP allowlisting.",
+            severity: "High",
+            impact: 7.5,
+            status: "Open",
+            factor: "Network Security",
+            assetIndexes: [0, 1, 2, 4], // affects 4 assets
+        },
+        {
+            title: "Outdated TLS Version (TLS 1.0/1.1)",
+            description: "Server supports deprecated TLS versions which are vulnerable to POODLE and BEAST attacks.",
+            severity: "Medium",
+            impact: 5.3,
+            status: "Open",
+            factor: "Application Security",
+            assetIndexes: [0, 3, 5], // affects 3 assets
+        },
+        {
+            title: "HTTP Security Headers Missing",
+            description: "Responses are missing recommended security headers such as X-Frame-Options, CSP, and HSTS.",
+            severity: "Medium",
+            impact: 4.2,
+            status: "Open",
+            factor: "Application Security",
+            assetIndexes: [1, 2, 3, 4, 5], // affects 5 assets
+        },
+        {
+            title: "Default Admin Credentials",
+            description: "Service is running with default credentials that have not been changed from vendor defaults.",
+            severity: "Critical",
+            impact: 9.8,
+            status: "Open",
+            factor: "Endpoint Security",
+            assetIndexes: [2, 5], // affects 2 assets
+        },
+        {
+            title: "Unencrypted HTTP Endpoint",
+            description: "Service accessible over plain HTTP without redirect to HTTPS.",
+            severity: "Medium",
+            impact: 5.0,
+            status: "Open",
+            factor: "Network Security",
+            assetIndexes: [3, 4], // affects 2 assets
+        },
+        {
+            title: "Expired SSL Certificate",
+            description: "The SSL/TLS certificate has expired or will expire within 30 days.",
+            severity: "High",
+            impact: 6.5,
+            status: "Open",
+            factor: "DNS Health",
+            assetIndexes: [1, 5], // affects 2 assets
+        },
+        {
+            title: "Software Version Disclosure",
+            description: "HTTP response headers reveal server software version, aiding attackers in targeting specific vulnerabilities.",
+            severity: "Low",
+            impact: 2.1,
+            status: "Open",
+            factor: "Information Leakage",
+            assetIndexes: [0, 1, 2, 3, 4, 5], // affects all 6 assets
+        },
+        {
+            title: "Weak Password Policy",
+            description: "Login endpoint has no rate limiting or account lockout, making it vulnerable to brute-force attacks.",
+            severity: "High",
+            impact: 7.2,
+            status: "Resolved",
+            factor: "Endpoint Security",
+            assetIndexes: [0, 4],
+        },
+    ]
+
+    for (const def of issueDefinitions) {
+        const { assetIndexes, ...issueData } = def
+        const issue = await prisma.issue.create({ data: issueData })
+
+        // Link issue to multiple assets via the join table
+        for (const idx of assetIndexes) {
+            await prisma.issueOnAsset.create({
+                data: {
+                    issueId: issue.id,
+                    assetId: assets[idx].id,
+                    lastObserved: new Date(),
+                }
+            })
         }
-    })
-
-    console.log(`Created asset with id: ${asset1.id}`)
+        console.log(`Created issue "${issue.title}" linked to ${assetIndexes.length} assets`)
+    }
 
     console.log(`Seeding finished.`)
 }

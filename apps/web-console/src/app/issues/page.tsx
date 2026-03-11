@@ -4,12 +4,28 @@ import React, { useEffect, useState } from "react"
 import { LayoutDashboard, Users, ShieldAlert, Settings, Activity } from "lucide-react"
 import { Sidebar } from "@/components/sidebar"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-
+import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 
+interface Issue {
+    id: number
+    title: string
+    factor: string
+    severity: string
+    impact: number | null
+    status: string
+    findingsCount: number
+}
+
+interface DashboardData {
+    score: number
+    grade: string
+}
+
 export default function IssuesPage() {
-    const [issuesData, setIssuesData] = useState<any[]>([])
-    const [dashboardData, setDashboardData] = useState<any>(null)
+    const router = useRouter()
+    const [issuesData, setIssuesData] = useState<Issue[]>([])
+    const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
 
     // Filter states
     const [selectedFactor, setSelectedFactor] = useState("All")
@@ -25,27 +41,10 @@ export default function IssuesPage() {
         // Fetch issues
         fetch('http://localhost:3001/api/issues')
             .then(res => res.json())
-            .then(data => {
-                const formatted = data.map((issue: any) => {
-                    let factor = "Network Security"
-                    const titleLower = (issue.title || "").toLowerCase();
-                    if (titleLower.includes("leak") || titleLower.includes("expose")) factor = "Information Leak";
-
-                    return {
-                        id: issue.id,
-                        issue: issue.title,
-                        factor: factor,
-                        severity: issue.severity,
-                        impact: issue.impact,
-                        findings: 1, // Aggregated findings representation
-                    }
-                });
-                setIssuesData(formatted)
-            })
+            .then((data: Issue[]) => setIssuesData(data))
             .catch(err => console.error(err))
     }, [])
 
-    // Exact same sidebar structure as Dashboard
     const navigations = [
         { title: "Dashboard", href: "/", icon: LayoutDashboard },
         { title: "Issues portfolio", href: "/issues", icon: ShieldAlert, isActive: true },
@@ -60,28 +59,28 @@ export default function IssuesPage() {
 
     // Apply filters
     const filteredIssues = issuesData.filter(i => {
-        if (selectedFactor !== "All" && i.factor !== selectedFactor) return false;
-        if (selectedSeverity !== "All" && i.severity !== selectedSeverity) return false;
-        return true;
+        if (selectedFactor !== "All" && i.factor !== selectedFactor) return false
+        if (selectedSeverity !== "All" && i.severity !== selectedSeverity) return false
+        return true
     })
 
-    const grade = dashboardData ? dashboardData.grade : '-';
-    let colorClass = "text-muted-foreground";
-    let bgClass = "bg-muted/10";
-    let borderClass = "border-muted/20";
+    const grade = dashboardData ? dashboardData.grade : '-'
+    let colorClass = "text-muted-foreground"
+    let bgClass = "bg-muted/10"
+    let borderClass = "border-muted/20"
 
     if (grade === 'A' || grade === 'B') {
-        colorClass = "text-green-500";
-        bgClass = "bg-green-500/10";
-        borderClass = "border-green-500/20";
+        colorClass = "text-green-500"
+        bgClass = "bg-green-500/10"
+        borderClass = "border-green-500/20"
     } else if (grade === 'C') {
-        colorClass = "text-yellow-500";
-        bgClass = "bg-yellow-500/10";
-        borderClass = "border-yellow-500/20";
+        colorClass = "text-yellow-500"
+        bgClass = "bg-yellow-500/10"
+        borderClass = "border-yellow-500/20"
     } else if (grade === 'D' || grade === 'F') {
-        colorClass = "text-red-500";
-        bgClass = "bg-red-500/10";
-        borderClass = "border-red-500/20";
+        colorClass = "text-red-500"
+        bgClass = "bg-red-500/10"
+        borderClass = "border-red-500/20"
     }
 
     return (
@@ -91,7 +90,7 @@ export default function IssuesPage() {
             <main className="flex-1 overflow-auto flex flex-col p-8 bg-muted/10">
                 <h2 className="text-4xl font-extrabold tracking-tight mb-8 mt-2">Issues</h2>
 
-                {/* Grade Summary Card Area - Server Managed */}
+                {/* Grade Summary Card Area */}
                 <div className="flex items-center gap-6 mb-10">
                     <div className={cn("flex items-center justify-center w-16 h-16 rounded-full border-4 shadow-sm", bgClass, borderClass)}>
                         <span className={cn("text-3xl font-bold", colorClass)}>{grade}</span>
@@ -112,7 +111,7 @@ export default function IssuesPage() {
                         <select
                             value={selectedFactor}
                             onChange={(e) => setSelectedFactor(e.target.value)}
-                            className="flex h-10 w-[200px] items-center justify-between rounded-md border border-input bg-card px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                            className="flex h-10 w-[200px] items-center justify-between rounded-md border border-input bg-card px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
                             {availableFactors.map(f => (
                                 <option key={f} value={f}>{f}</option>
                             ))}
@@ -123,14 +122,14 @@ export default function IssuesPage() {
                         <select
                             value={selectedSeverity}
                             onChange={(e) => setSelectedSeverity(e.target.value)}
-                            className="flex h-10 w-[200px] items-center justify-between rounded-md border border-input bg-card px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                            className="flex h-10 w-[200px] items-center justify-between rounded-md border border-input bg-card px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
                             {availableSeverities.map(s => (
                                 <option key={s} value={s}>{s}</option>
                             ))}
                         </select>
                     </div>
                     <button
-                        onClick={() => { setSelectedFactor("All"); setSelectedSeverity("All"); }}
+                        onClick={() => { setSelectedFactor("All"); setSelectedSeverity("All") }}
                         className="inline-flex h-10 items-center justify-center rounded-md bg-blue-600 px-6 text-sm font-medium text-white shadow transition-colors hover:bg-blue-700">
                         Clear
                     </button>
@@ -149,20 +148,23 @@ export default function IssuesPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {filteredIssues.length > 0 ? filteredIssues.map((row: any, i: number) => (
-                                <TableRow key={row.id || i} className={i % 2 === 0 ? "bg-background" : "bg-muted/20"}>
-                                    <TableCell className="font-medium text-muted-foreground">{row.issue}</TableCell>
+                            {filteredIssues.length > 0 ? filteredIssues.map((row, i) => (
+                                <TableRow key={row.id} className={i % 2 === 0 ? "bg-background" : "bg-muted/20"}>
+                                    <TableCell className="font-medium text-muted-foreground">{row.title}</TableCell>
                                     <TableCell className="text-muted-foreground">{row.factor}</TableCell>
                                     <TableCell className="text-muted-foreground">
                                         <span className={`px-2 py-1 rounded-full text-xs font-semibold ${row.severity === 'Critical' || row.severity === 'High' ? 'bg-red-100 text-red-800' : row.severity === 'Medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'}`}>
                                             {row.severity}
                                         </span>
                                     </TableCell>
-                                    <TableCell className="text-muted-foreground">{row.impact}</TableCell>
+                                    <TableCell className="text-muted-foreground">{row.impact ?? '—'}</TableCell>
                                     <TableCell>
-                                        <a href="#" className="font-semibold text-blue-600 hover:underline">
-                                            {row.findings}
-                                        </a>
+                                        <button
+                                            onClick={() => router.push(`/issues/${row.id}`)}
+                                            className="font-semibold text-blue-600 hover:underline"
+                                        >
+                                            {row.findingsCount}
+                                        </button>
                                     </TableCell>
                                 </TableRow>
                             )) : (

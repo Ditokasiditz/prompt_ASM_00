@@ -20,24 +20,37 @@ model Factor {
 }
 
 model Asset {
-  id             Int      @id @default(autoincrement())
-  hostname       String   @unique
-  ipAddress      String?
-  type           String   // e.g., "domain", "ip", "subdomain"
-  isExposed      Boolean  @default(false)
-  discoveredAt   DateTime @default(now())
-  issues         Issue[]
+  id           Int            @id @default(autoincrement())
+  hostname     String         @unique
+  ipAddress    String?
+  type         String         // e.g., "domain", "ip", "subdomain"
+  isExposed    Boolean        @default(false)
+  discoveredAt DateTime       @default(now())
+  issues       IssueOnAsset[]
 }
 
 model Issue {
-  id          Int      @id @default(autoincrement())
-  title       String
+  id          Int            @id @default(autoincrement())
+  title       String         @unique
   description String?
-  severity    String   // e.g., "Critical", "High", "Medium", "Low"
-  impact      Float?   // Score out of 10.0
-  status      String   @default("Open") // "Open", "Resolved"
-  assetId     Int?
-  asset       Asset?   @relation(fields: [assetId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  severity    String         // "Critical", "High", "Medium", "Low"
+  impact      Float?
+  status      String         @default("Open") // "Open", "Resolved"
+  factor      String         @default("Network Security")
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  assets      IssueOnAsset[]
+}
+
+// Join table: many-to-many between Issue and Asset
+model IssueOnAsset {
+  id           Int      @id @default(autoincrement())
+  issue        Issue    @relation(fields: [issueId], references: [id])
+  issueId      Int
+  asset        Asset    @relation(fields: [assetId], references: [id])
+  assetId      Int
+  lastObserved DateTime @default(now())
+  comment      String?  // User-written comment for this specific finding
+
+  @@unique([issueId, assetId])
 }

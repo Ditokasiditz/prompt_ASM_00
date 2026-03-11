@@ -4,15 +4,25 @@ import { PrismaClient } from '@prisma/client';
 const router = Router();
 const prisma = new PrismaClient();
 
+// GET /api/issues - returns all issues with affected asset count and asset details
 router.get('/', async (req: Request, res: Response) => {
     try {
         const issues = await prisma.issue.findMany({
             include: {
-                asset: {
-                    select: {
-                        hostname: true,
-                        ipAddress: true
+                assets: {
+                    include: {
+                        asset: {
+                            select: {
+                                id: true,
+                                hostname: true,
+                                ipAddress: true,
+                                type: true,
+                            }
+                        }
                     }
+                },
+                _count: {
+                    select: { assets: true }
                 }
             },
             orderBy: {
@@ -20,15 +30,115 @@ router.get('/', async (req: Request, res: Response) => {
             }
         });
 
-        // Ensure impact is returned
-        const mappedIssues = issues.map(issue => ({
-            ...issue,
-            impact: issue.impact ?? (issue.severity === 'High' ? 5.6 : issue.severity === 'Medium' ? 3.1 : 1.0)
+        const result = issues.map(issue => ({
+            id: issue.id,
+            title: issue.title,
+            description: issue.description,
+            severity: issue.severity,
+            impact: issue.impact,
+            status: issue.status,
+            factor: issue.factor,
+            createdAt: issue.createdAt,
+            updatedAt: issue.updatedAt,
+            findingsCount: issue._count.assets,
+            findings: issue.assets.map(ia => ({
+                assetId: ia.asset.id,
+                hostname: ia.asset.hostname,
+                ipAddress: ia.asset.ipAddress,
+                type: ia.asset.type,
+                lastObserved: ia.lastObserved,
+            }))
         }));
 
-        res.json(mappedIssues);
+        res.json(result);
     } catch (error) {
         console.error('Error fetching issues:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// GET /api/issues/:id - returns a single issue with full findings for the detail page
+router.get('/:id', async (req: Request, res: Response) => {
+    try {
+        const id = parseInt(String(req.params.id), 10);
+        if (isNaN(id)) {
+            res.status(400).json({ error: 'Invalid issue ID' });
+            return;
+        }
+
+        const issue = await prisma.issue.findUnique({
+            where: { id },
+            include: {
+                assets: {
+                    include: {
+                        asset: {
+                            select: {
+                                id: true,
+                                hostname: true,
+                                ipAddress: true,
+                                type: true,
+                                isExposed: true,
+                            }
+                        }
+                    },
+                    orderBy: { lastObserved: 'desc' }
+                },
+                _count: { select: { assets: true } }
+            }
+        });
+
+        if (!issue) {
+            res.status(404).json({ error: 'Issue not found' });
+            return;
+        }
+
+        res.json({
+            id: issue.id,
+            title: issue.title,
+            description: issue.description,
+            severity: issue.severity,
+            impact: issue.impact,
+            status: issue.status,
+            factor: issue.factor,
+            createdAt: issue.createdAt,
+            updatedAt: issue.updatedAt,
+            findingsCount: issue._count.assets,
+            findings: issue.assets.map(ia => ({
+                assetId: ia.asset.id,
+                hostname: ia.asset.hostname,
+                ipAddress: ia.asset.ipAddress,
+                type: ia.asset.type,
+                isExposed: ia.asset.isExposed,
+                lastObserved: ia.lastObserved,
+                comment: ia.comment ?? null,
+            }))
+        });
+    } catch (error) {
+        console.error('Error fetching issue detail:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// PATCH /api/issues/:issueId/findings/:assetId - save a comment on a specific finding
+router.patch('/:issueId/findings/:assetId', async (req: Request, res: Response) => {
+    try {
+        const issueId = parseInt(String(req.params.issueId), 10);
+        const assetId = parseInt(String(req.params.assetId), 10);
+        const { comment } = req.body as { comment: string | null };
+
+        if (isNaN(issueId) || isNaN(assetId)) {
+            res.status(400).json({ error: 'Invalid IDs' });
+            return;
+        }
+
+        const updated = await prisma.issueOnAsset.update({
+            where: { issueId_assetId: { issueId, assetId } },
+            data: { comment: comment ?? null },
+        });
+
+        res.json({ comment: updated.comment });
+    } catch (error) {
+        console.error('Error saving comment:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
