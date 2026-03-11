@@ -35,7 +35,6 @@ model Issue {
   description String?
   severity    String         // "Critical", "High", "Medium", "Low"
   impact      Float?
-  status      String         @default("Open") // "Open", "Resolved"
   factor      String         @default("Network Security")
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
@@ -49,8 +48,9 @@ model IssueOnAsset {
   issueId      Int
   asset        Asset    @relation(fields: [assetId], references: [id])
   assetId      Int
+  status       String   @default("Open") // Per-finding status: "Open", "Resolved"
   lastObserved DateTime @default(now())
-  comment      String?  // User-written comment for this specific finding
+  comment      String?
 
   @@unique([issueId, assetId])
 }

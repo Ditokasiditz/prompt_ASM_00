@@ -36,7 +36,6 @@ router.get('/', async (req: Request, res: Response) => {
             description: issue.description,
             severity: issue.severity,
             impact: issue.impact,
-            status: issue.status,
             factor: issue.factor,
             createdAt: issue.createdAt,
             updatedAt: issue.updatedAt,
@@ -46,6 +45,7 @@ router.get('/', async (req: Request, res: Response) => {
                 hostname: ia.asset.hostname,
                 ipAddress: ia.asset.ipAddress,
                 type: ia.asset.type,
+                status: ia.status,
                 lastObserved: ia.lastObserved,
             }))
         }));
@@ -98,7 +98,6 @@ router.get('/:id', async (req: Request, res: Response) => {
             description: issue.description,
             severity: issue.severity,
             impact: issue.impact,
-            status: issue.status,
             factor: issue.factor,
             createdAt: issue.createdAt,
             updatedAt: issue.updatedAt,
@@ -109,6 +108,7 @@ router.get('/:id', async (req: Request, res: Response) => {
                 ipAddress: ia.asset.ipAddress,
                 type: ia.asset.type,
                 isExposed: ia.asset.isExposed,
+                status: ia.status,
                 lastObserved: ia.lastObserved,
                 comment: ia.comment ?? null,
             }))

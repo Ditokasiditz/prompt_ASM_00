@@ -45,85 +45,86 @@ async function main() {
             description: "SSH port is open and exposed to the internet without IP allowlisting.",
             severity: "High",
             impact: 7.5,
-            status: "Open",
             factor: "Network Security",
-            assetIndexes: [0, 1, 2, 4], // affects 4 assets
+            assetIndexes: [0, 1, 2, 4],
+            statuses:     ["Open", "Open", "Open", "Resolved"],
         },
         {
             title: "Outdated TLS Version (TLS 1.0/1.1)",
             description: "Server supports deprecated TLS versions which are vulnerable to POODLE and BEAST attacks.",
             severity: "Medium",
             impact: 5.3,
-            status: "Open",
             factor: "Application Security",
-            assetIndexes: [0, 3, 5], // affects 3 assets
+            assetIndexes: [0, 3, 5],
+            statuses:     ["Open", "Open", "Resolved"],
         },
         {
             title: "HTTP Security Headers Missing",
             description: "Responses are missing recommended security headers such as X-Frame-Options, CSP, and HSTS.",
             severity: "Medium",
             impact: 4.2,
-            status: "Open",
             factor: "Application Security",
-            assetIndexes: [1, 2, 3, 4, 5], // affects 5 assets
+            assetIndexes: [1, 2, 3, 4, 5],
+            statuses:     ["Open", "Open", "Open", "Resolved", "Open"],
         },
         {
             title: "Default Admin Credentials",
             description: "Service is running with default credentials that have not been changed from vendor defaults.",
             severity: "Critical",
             impact: 9.8,
-            status: "Open",
             factor: "Endpoint Security",
-            assetIndexes: [2, 5], // affects 2 assets
+            assetIndexes: [2, 5],
+            statuses:     ["Open", "Open"],
         },
         {
             title: "Unencrypted HTTP Endpoint",
             description: "Service accessible over plain HTTP without redirect to HTTPS.",
             severity: "Medium",
             impact: 5.0,
-            status: "Open",
             factor: "Network Security",
-            assetIndexes: [3, 4], // affects 2 assets
+            assetIndexes: [3, 4],
+            statuses:     ["Open", "Resolved"],
         },
         {
             title: "Expired SSL Certificate",
             description: "The SSL/TLS certificate has expired or will expire within 30 days.",
             severity: "High",
             impact: 6.5,
-            status: "Open",
             factor: "DNS Health",
-            assetIndexes: [1, 5], // affects 2 assets
+            assetIndexes: [1, 5],
+            statuses:     ["Open", "Open"],
         },
         {
             title: "Software Version Disclosure",
             description: "HTTP response headers reveal server software version, aiding attackers in targeting specific vulnerabilities.",
             severity: "Low",
             impact: 2.1,
-            status: "Open",
             factor: "Information Leakage",
-            assetIndexes: [0, 1, 2, 3, 4, 5], // affects all 6 assets
+            assetIndexes: [0, 1, 2, 3, 4, 5],
+            statuses:     ["Open", "Open", "Resolved", "Open", "Open", "Resolved"],
         },
         {
             title: "Weak Password Policy",
             description: "Login endpoint has no rate limiting or account lockout, making it vulnerable to brute-force attacks.",
             severity: "High",
             impact: 7.2,
-            status: "Resolved",
             factor: "Endpoint Security",
             assetIndexes: [0, 4],
+            statuses:     ["Resolved", "Resolved"],
         },
     ]
 
     for (const def of issueDefinitions) {
-        const { assetIndexes, ...issueData } = def
+        const { assetIndexes, statuses, ...issueData } = def
         const issue = await prisma.issue.create({ data: issueData })
 
-        // Link issue to multiple assets via the join table
-        for (const idx of assetIndexes) {
+        // Link issue to multiple assets, each with its own status
+        for (let i = 0; i < assetIndexes.length; i++) {
             await prisma.issueOnAsset.create({
                 data: {
                     issueId: issue.id,
-                    assetId: assets[idx].id,
+                    assetId: assets[assetIndexes[i]].id,
+                    status: statuses[i],
                     lastObserved: new Date(),
                 }
             })

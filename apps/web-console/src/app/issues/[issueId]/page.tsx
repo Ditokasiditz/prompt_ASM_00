@@ -16,6 +16,7 @@ interface FindingAsset {
     ipAddress: string | null
     type: string
     isExposed: boolean
+    status: string
     lastObserved: string
     comment: string | null
 }
@@ -26,7 +27,6 @@ interface IssueDetail {
     description: string | null
     severity: string
     impact: number | null
-    status: string
     factor: string
     findingsCount: number
     findings: FindingAsset[]
@@ -255,13 +255,6 @@ export default function IssueFindingsPage() {
                                 <span className={cn("px-2.5 py-0.5 rounded-full text-xs font-semibold", SEVERITY_COLORS[issue.severity] ?? "bg-gray-100 text-gray-800")}>
                                     {issue.severity}
                                 </span>
-                                <span className={cn(
-                                    "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold",
-                                    issue.status === 'Open' ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
-                                )}>
-                                    <span className={cn("w-1.5 h-1.5 rounded-full", issue.status === 'Open' ? "bg-red-500" : "bg-green-500")} />
-                                    {issue.status}
-                                </span>
                             </div>
                             <p className="text-sm text-muted-foreground">{issue.description ?? 'No description available.'}</p>
                             <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
@@ -303,11 +296,14 @@ export default function IssueFindingsPage() {
 
                                         return (
                                             <TableRow key={finding.assetId} className="border-b border-border hover:bg-muted/20 transition-colors">
-                                                {/* Status */}
+                                                {/* Status — read from finding.status in the DB */}
                                                 <TableCell>
                                                     <span className="flex items-center gap-2">
-                                                        <span className="w-2.5 h-2.5 rounded-full bg-red-500 flex-shrink-0" />
-                                                        <span className="text-sm font-medium">Open</span>
+                                                        <span className={cn(
+                                                            "w-2.5 h-2.5 rounded-full flex-shrink-0",
+                                                            finding.status === 'Open' ? "bg-red-500" : "bg-green-500"
+                                                        )} />
+                                                        <span className="text-sm font-medium">{finding.status}</span>
                                                     </span>
                                                 </TableCell>
 
