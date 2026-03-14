@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from "react"
-import { LayoutDashboard, Users, ShieldAlert, Settings, Activity } from "lucide-react"
+import { LayoutDashboard, Users, ShieldAlert, Settings, Activity, ShieldCheck } from "lucide-react"
 import { Sidebar } from "@/components/sidebar"
 import { ScoreGrade } from "@/components/score-grade"
 import { FactorBreakdown } from "@/components/factor-breakdown"
@@ -37,6 +37,7 @@ export default function DashboardPage() {
 
   const navigations = [
     { title: "Dashboard", href: "/", icon: LayoutDashboard, isActive: true },
+    { title: "Score Factor", href: "/score-factor", icon: ShieldCheck },
     { title: "Issues portfolio", href: "/issues", icon: ShieldAlert },
     { title: "Digital Footprint", href: "/assets", icon: Activity },
     { title: "Team", href: "/team", icon: Users },

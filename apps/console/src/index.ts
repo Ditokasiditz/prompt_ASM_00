@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import dashboardRoutes from './routes/dashboard.js';
 import issueRoutes from './routes/issues.js';
 import assetRoutes from './routes/assets.js';
+import factorRoutes from './routes/factors.js';
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ app.use(express.json());
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/issues', issueRoutes);
 app.use('/api/assets', assetRoutes);
+app.use('/api/factors', factorRoutes);
 
 app.get('/api/health', (req: Request, res: Response) => {
     res.json({ status: 'ok', message: 'ASM Backend is running' });

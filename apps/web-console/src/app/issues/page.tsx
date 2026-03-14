@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from "react"
-import { LayoutDashboard, Users, ShieldAlert, Settings, Activity } from "lucide-react"
+import { LayoutDashboard, Users, ShieldAlert, Settings, Activity, ShieldCheck } from "lucide-react"
 import { Sidebar } from "@/components/sidebar"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useRouter } from "next/navigation"
@@ -47,6 +47,7 @@ export default function IssuesPage() {
 
     const navigations = [
         { title: "Dashboard", href: "/", icon: LayoutDashboard },
+        { title: "Score Factor", href: "/score-factor", icon: ShieldCheck },
         { title: "Issues portfolio", href: "/issues", icon: ShieldAlert, isActive: true },
         { title: "Digital Footprint", href: "/assets", icon: Activity },
         { title: "Team", href: "/team", icon: Users },

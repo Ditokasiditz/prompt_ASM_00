@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { LayoutDashboard, Users, ShieldAlert, Settings, Activity, ArrowLeft, Tag, MessageSquare, X, Loader2 } from "lucide-react"
+import { LayoutDashboard, Users, ShieldAlert, Settings, Activity, ArrowLeft, Tag, MessageSquare, X, Loader2, ShieldCheck } from "lucide-react"
 import { Sidebar } from "@/components/sidebar"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
@@ -198,6 +198,7 @@ export default function IssueFindingsPage() {
 
     const navigations = [
         { title: "Dashboard", href: "/", icon: LayoutDashboard },
+        { title: "Score Factor", href: "/score-factor", icon: ShieldCheck },
         { title: "Issues portfolio", href: "/issues", icon: ShieldAlert, isActive: true },
         { title: "Digital Footprint", href: "/assets", icon: Activity },
         { title: "Team", href: "/team", icon: Users },
