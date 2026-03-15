@@ -36,6 +36,7 @@ export interface FactorDef {
 
 interface ScoreFactorTableProps {
   data: FactorDef[]
+  visibleColumns?: string[]
 }
 
 const GradeIcon = ({ score }: { score: number }) => {
@@ -64,13 +65,13 @@ const GradeIcon = ({ score }: { score: number }) => {
 
 const SeverityCounts = ({ counts }: { counts: { critical: number, high: number, medium: number, low: number } }) => {
   return (
-    <div className="flex items-center space-x-3 text-sm">
-      {counts.critical > 0 && <span className="text-red-600 font-medium">Critical: {counts.critical}</span>}
-      {counts.high > 0 && <span className="text-red-500 font-medium">High: {counts.high}</span>}
-      {counts.medium > 0 && <span className="text-orange-500 font-medium">Medium: {counts.medium}</span>}
-      {counts.low > 0 && <span className="text-yellow-500 font-medium">Low: {counts.low}</span>}
+    <div className="flex items-center space-x-2 text-xs font-semibold">
+      {counts.critical > 0 && <span className="px-2 py-1 rounded-full bg-red-100 text-red-800">Critical: {counts.critical}</span>}
+      {counts.high > 0 && <span className="px-2 py-1 rounded-full bg-red-100 text-red-800">High: {counts.high}</span>}
+      {counts.medium > 0 && <span className="px-2 py-1 rounded-full bg-yellow-100 text-yellow-800">Medium: {counts.medium}</span>}
+      {counts.low > 0 && <span className="px-2 py-1 rounded-full bg-blue-100 text-blue-800">Low: {counts.low}</span>}
       {(counts.critical === 0 && counts.high === 0 && counts.medium === 0 && counts.low === 0) && (
-        <span className="text-muted-foreground">0 Issues</span>
+        <span className="text-muted-foreground font-normal text-sm">0 Issues</span>
       )}
     </div>
   )
@@ -84,7 +85,7 @@ const ImpactBadge = ({ impact }: { impact: number }) => {
   )
 }
 
-export function ScoreFactorTable({ data }: ScoreFactorTableProps) {
+export function ScoreFactorTable({ data, visibleColumns = ['Factor', 'Score', 'Impact', 'Issues', 'Findings'] }: ScoreFactorTableProps) {
   const [expandedRows, setExpandedRows] = React.useState<Set<number>>(new Set())
   const router = useRouter()
 
@@ -105,54 +106,47 @@ export function ScoreFactorTable({ data }: ScoreFactorTableProps) {
   }
 
   return (
-    <div className="rounded-md border bg-card">
-      <Table>
+    <div className="rounded-md border border-[#d4d4d8] bg-card overflow-hidden">
+      <Table className="border-collapse">
         <TableHeader>
-          <TableRow className="bg-muted/50 hover:bg-muted/50">
+          <TableRow className="bg-[#f9f9fb] border-b-[#d4d4d8] hover:bg-[#f9f9fb]">
             <TableHead className="w-[50px]"></TableHead>
-            <TableHead className="font-semibold">Factor</TableHead>
-            <TableHead className="font-semibold">Score</TableHead>
-            <TableHead className="font-semibold">Impact</TableHead>
-            <TableHead className="font-semibold">Issues</TableHead>
-            <TableHead className="font-semibold text-right">Findings</TableHead>
+            {visibleColumns.includes('Factor') && <TableHead className="font-semibold">Factor</TableHead>}
+            {visibleColumns.includes('Score') && <TableHead className="font-semibold">Score</TableHead>}
+            {visibleColumns.includes('Impact') && <TableHead className="font-semibold">Impact</TableHead>}
+            {visibleColumns.includes('Issues') && <TableHead className="font-semibold">Issues</TableHead>}
+            {visibleColumns.includes('Findings') && <TableHead className="font-semibold text-right">Findings</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
           {data.map((factor) => (
             <React.Fragment key={factor.id}>
-              <TableRow 
-                className="cursor-pointer hover:bg-muted/30 group"
-                onClick={() => toggleRow(factor.id)}
-              >
-                <TableCell>
+              <TableRow className="hover:bg-muted/30 group border-b-[#d4d4d8]">
+                <TableCell className="cursor-pointer" onClick={() => toggleRow(factor.id)}>
                   {expandedRows.has(factor.id) ? (
                     <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform" />
                   ) : (
                     <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:text-foreground" />
                   )}
                 </TableCell>
-                <TableCell className="font-medium">{factor.title}</TableCell>
-                <TableCell>
-                  <GradeIcon score={factor.score} />
-                </TableCell>
-                <TableCell>
-                  <ImpactBadge impact={factor.impact} />
-                </TableCell>
-                <TableCell>
-                  <SeverityCounts counts={factor.issues} />
-                </TableCell>
-                <TableCell className="text-right text-muted-foreground">
-                  {factor.findingsCount > 0 ? (
-                    <span className="font-medium text-foreground">{factor.findingsCount}</span>
-                  ) : (
-                    factor.findingsCount
-                  )}
-                </TableCell>
+                {visibleColumns.includes('Factor') && <TableCell className="font-medium">{factor.title}</TableCell>}
+                {visibleColumns.includes('Score') && <TableCell><GradeIcon score={factor.score} /></TableCell>}
+                {visibleColumns.includes('Impact') && <TableCell><ImpactBadge impact={factor.impact} /></TableCell>}
+                {visibleColumns.includes('Issues') && <TableCell><SeverityCounts counts={factor.issues} /></TableCell>}
+                {visibleColumns.includes('Findings') && (
+                  <TableCell className="text-right text-muted-foreground">
+                    {factor.findingsCount > 0 ? (
+                      <span className="font-medium text-foreground">{factor.findingsCount}</span>
+                    ) : (
+                      factor.findingsCount
+                    )}
+                  </TableCell>
+                )}
               </TableRow>
               
               {/* Expanded Nested Issues */}
               {expandedRows.has(factor.id) && factor.nestedIssues && factor.nestedIssues.length > 0 && (
-                <TableRow className="bg-muted/10 hover:bg-muted/10">
+                <TableRow className="bg-muted/10 hover:bg-muted/10 border-b-[#d4d4d8]">
                   <TableCell colSpan={6} className="p-0 border-b-0">
                     <div className="py-3 px-6 ml-6 border-l-2 border-primary/20 bg-background/50">
                       <p className="text-sm text-muted-foreground mb-3 font-medium">Issues detected under {factor.title}</p>
@@ -163,21 +157,23 @@ export function ScoreFactorTable({ data }: ScoreFactorTableProps) {
                             onClick={() => handleIssueClick(issue.title)}
                             className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50 cursor-pointer transition-colors border border-transparent hover:border-border"
                           >
-                            <div className="flex items-center space-x-3">
-                              <span className={`w-2 h-2 rounded-full ${
-                                issue.severity === 'Critical' ? 'bg-red-600' :
-                                issue.severity === 'High' ? 'bg-red-500' :
-                                issue.severity === 'Medium' ? 'bg-orange-500' : 'bg-yellow-500'
-                              }`} />
-                              <span className="text-sm font-medium hover:underline decoration-muted-foreground underline-offset-4 w-[300px] truncate" title={issue.title}>
+                            <div className="flex items-center space-x-3 w-1/3">
+                              <span className="text-sm font-medium hover:underline decoration-muted-foreground underline-offset-4 truncate" title={issue.title}>
                                 {issue.title}
                               </span>
                             </div>
-                            <div className="flex items-center space-x-8 text-sm text-muted-foreground min-w-[300px] justify-end">
+                            <div className="flex items-center space-x-6 text-sm text-muted-foreground w-2/3 justify-end">
                               <span className="w-16 text-right">
                                 {issue.impact > 0 ? <ImpactBadge impact={issue.impact} /> : <span className="text-muted-foreground/50">-</span>}
                               </span>
-                              <span className="w-20 text-right">{issue.severity}</span>
+                              <span className="w-24 text-right">
+                                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                                  issue.severity === 'Critical' || issue.severity === 'High' ? 'bg-red-100 text-red-800' :
+                                  issue.severity === 'Medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'
+                                }`}>
+                                  {issue.severity}
+                                </span>
+                              </span>
                               <span className="w-16 text-right font-medium">{issue.findingsCount}</span>
                             </div>
                           </li>
