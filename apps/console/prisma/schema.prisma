@@ -26,6 +26,11 @@ model Asset {
   type         String         // e.g., "domain", "ip", "subdomain"
   isExposed    Boolean        @default(false)
   discoveredAt DateTime       @default(now())
+  city         String?
+  country      String?
+  countryCode  String?
+  latitude     Float?
+  longitude    Float?
   issues       IssueOnAsset[]
 }
 

@@ -40,7 +40,7 @@ export default function DashboardPage() {
     { title: "Dashboard", href: "/", icon: LayoutDashboard, isActive: true },
     { title: "Score Factor", href: "/score-factor", icon: ShieldCheck },
     { title: "Issues portfolio", href: "/issues", icon: ShieldAlert },
-    { title: "Digital Footprint", href: "/assets", icon: Activity },
+    { title: "Digital Footprint", href: "/digital-footprint", icon: Activity },
     { title: "Team", href: "/team", icon: Users },
     { title: "Settings", href: "/settings", icon: Settings },
   ]

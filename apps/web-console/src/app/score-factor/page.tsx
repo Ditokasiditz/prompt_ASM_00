@@ -51,7 +51,7 @@ export default function ScoreFactorPage() {
     { title: "Dashboard", href: "/", icon: LayoutDashboard },
     { title: "Score Factor", href: "/score-factor", icon: ShieldCheck, isActive: true },
     { title: "Issues portfolio", href: "/issues", icon: ShieldAlert },
-    { title: "Digital Footprint", href: "/assets", icon: Activity },
+    { title: "Digital Footprint", href: "/digital-footprint", icon: Activity },
     { title: "Team", href: "/team", icon: Users },
     { title: "Settings", href: "/settings", icon: Settings },
   ]
