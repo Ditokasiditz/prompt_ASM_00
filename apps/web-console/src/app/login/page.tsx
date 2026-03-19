@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+
 import { useAuth } from '@/providers/auth-provider';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -47,9 +48,8 @@ export default function LoginPage() {
 
       <Card className="w-full max-w-md relative z-10 bg-[#0A1040]/50 backdrop-blur-2xl border border-white/10 shadow-[0_0_40px_rgba(255,255,255,0.15)] rounded-2xl overflow-hidden p-2 text-white">
         <CardHeader className="space-y-1 items-center justify-center text-center pb-6 pt-4">
-          <div className="w-14 h-14 bg-white/10 border border-white/20 shadow-inner rounded-xl flex items-center justify-center mb-3">
-            <span className="text-2xl font-bold text-white">E</span>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="App Logo" className="w-20 h-20 object-contain mb-1 drop-shadow-lg" />
           <CardTitle className="text-3xl font-bold tracking-tight text-white mb-2">Welcome Back</CardTitle>
           <CardDescription className="text-blue-200/60 font-medium">Enter your credentials to access the console</CardDescription>
         </CardHeader>
