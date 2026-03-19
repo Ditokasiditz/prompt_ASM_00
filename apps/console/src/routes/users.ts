@@ -92,4 +92,46 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// @route   PUT /api/users/:id
+// @desc    Update a user (Admin only)
+router.put('/:id', async (req, res) => {
+  const userId = parseInt(req.params.id);
+  const { username, role, password } = req.body;
+
+  if (isNaN(userId)) {
+    return res.status(400).json({ error: 'Invalid user ID' });
+  }
+
+  try {
+    const updateData: any = {};
+    if (username) updateData.username = username;
+    if (role === 'ADMIN' || role === 'USER') updateData.role = role;
+    
+    if (password && password.trim() !== '') {
+      const salt = await bcrypt.genSalt(10);
+      updateData.password = await bcrypt.hash(password, salt);
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+      select: {
+        id: true,
+        username: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    res.json(updatedUser);
+  } catch (error: any) {
+    if (error.code === 'P2002') {
+      return res.status(400).json({ error: 'Username already exists' });
+    }
+    console.error('Update user error:', error);
+    res.status(500).json({ error: 'Server error updating user' });
+  }
+});
+
 export default router;
