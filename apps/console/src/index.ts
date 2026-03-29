@@ -15,7 +15,7 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3001;
 
-// Allow both local dev and deployed frontend origins
+// Allow local dev, explicit CORS_ORIGIN env var, and any Vercel deployment URL
 const allowedOrigins = [
   'http://localhost:3000',
   process.env.CORS_ORIGIN,
@@ -23,8 +23,12 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (e.g. curl, Postman) or matched origins
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin) return callback(null, true); // curl/Postman
+    // Allow exact match OR any *.vercel.app subdomain (covers preview + production deployments)
+    const isAllowed =
+      allowedOrigins.includes(origin) ||
+      /^https:\/\/[a-zA-Z0-9-]+(\.vercel\.app)$/.test(origin);
+    if (isAllowed) {
       callback(null, true);
     } else {
       callback(new Error(`CORS: origin ${origin} not allowed`));
