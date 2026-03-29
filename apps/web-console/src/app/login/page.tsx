@@ -23,13 +23,12 @@ export default function LoginPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
-        credentials: 'include',
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        login(data.user);
+        login(data.user, data.token);
       } else {
         setError(data.error || 'Login failed');
       }

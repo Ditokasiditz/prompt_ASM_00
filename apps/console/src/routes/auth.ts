@@ -35,25 +35,18 @@ router.post('/login', async (req, res) => {
       userId: user.id,
       username: user.username,
       role: user.role,
-      avatar: user.avatar,
     };
 
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1d' });
 
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: true,        // required for SameSite=None
-      sameSite: 'none',   // required for cross-origin (frontend ↔ backend on different domains)
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
-    });
-
+    // Return token in response body (localStorage-based auth for cross-domain support)
     res.json({
       message: 'Login successful',
+      token,
       user: {
         id: user.id,
         username: user.username,
         role: user.role,
-        avatar: user.avatar,
       },
     });
   } catch (error) {
@@ -63,38 +56,15 @@ router.post('/login', async (req, res) => {
 });
 
 // @route   POST /api/auth/logout
-// @desc    Clear the token cookie
+// @desc    Client-side logout (token is stored in localStorage, just acknowledge)
 router.post('/logout', (req, res) => {
-  res.clearCookie('token', {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'none',
-  });
   res.json({ message: 'Logged out successfully' });
 });
 
 // @route   GET /api/auth/me
 // @desc    Get current logged in user info
-router.get('/me', authenticateToken, async (req: any, res) => {
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: req.user.userId },
-      select: {
-        id: true,
-        username: true,
-        role: true,
-        avatar: true,
-      }
-    });
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    res.json({ user });
-  } catch (error) {
-    res.status(500).json({ error: 'Server error' });
-  }
+router.get('/me', authenticateToken, (req: any, res) => {
+  res.json({ user: req.user });
 });
 
 export default router;

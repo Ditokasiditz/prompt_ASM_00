@@ -9,7 +9,7 @@ import {
   MoreVertical, ChevronDown, Plus, X, Search, AlertTriangle,
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { API_BASE } from '@/lib/api';
+import { API_BASE, apiFetch } from '@/lib/api';
 
 export default function UsersManagementPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -45,7 +45,7 @@ export default function UsersManagementPage() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/users`, { credentials: 'include' });
+      const res = await apiFetch(`${API_BASE}/api/users`);
       if (!res.ok) throw new Error('Failed to fetch users');
       setUsers(await res.json());
     } catch (err) {
@@ -63,11 +63,10 @@ export default function UsersManagementPage() {
     setIsCreating(true);
     setError('');
     try {
-      const res = await fetch(`${API_BASE}/api/users`, {
+      const res = await apiFetch(`${API_BASE}/api/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password, role }),
-        credentials: 'include',
       });
       const data = await res.json();
       if (res.ok) {
@@ -90,7 +89,7 @@ export default function UsersManagementPage() {
     setIsUpdating(true);
     setError('');
     try {
-      const res = await fetch(`${API_BASE}/api/users/${editingUser.id}`, {
+      const res = await apiFetch(`${API_BASE}/api/users/${editingUser.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -125,7 +124,7 @@ export default function UsersManagementPage() {
     if (!deletingUser) return;
     setIsDeleting(true);
     try {
-      const res = await fetch(`${API_BASE}/api/users/${deletingUser.id}`, {
+      const res = await apiFetch(`${API_BASE}/api/users/${deletingUser.id}`, {
         method: 'DELETE',
         credentials: 'include',
       });

@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
-import { API_BASE } from "@/lib/api"
+import { API_BASE, apiFetch } from "@/lib/api"
 
 export default function SettingsPage() {
   const { setTheme, theme } = useTheme()
@@ -51,12 +51,11 @@ export default function SettingsPage() {
       const base64String = event.target?.result as string;
       
       try {
-        const response = await fetch(`${API_BASE}/api/profile/avatar`, {
+        const response = await apiFetch(`${API_BASE}/api/profile/avatar`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
-          credentials: 'include',
           body: JSON.stringify({ avatar: base64String })
         });
 
