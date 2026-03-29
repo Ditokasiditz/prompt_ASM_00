@@ -1,12 +1,10 @@
 'use client'
 
 import React, { useEffect, useState } from "react"
-import { LayoutDashboard, Users, ShieldAlert, Settings, Activity, ShieldCheck, ChevronDown, X } from "lucide-react"
-import { Sidebar } from "@/components/sidebar"
+import { ChevronDown, X } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { ProtectedRoute } from "@/providers/auth-provider"
 import { API_BASE } from "@/lib/api"
 
 interface Issue {
@@ -64,14 +62,6 @@ export default function IssuesPage() {
             .catch(err => console.error(err))
     }, [])
 
-    const navigations = [
-        { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-        { title: "Score Factor", href: "/score-factor", icon: ShieldCheck },
-        { title: "Issues portfolio", href: "/issues", icon: ShieldAlert, isActive: true },
-        { title: "Digital Footprint", href: "/digital-footprint", icon: Activity },
-        { title: "User Management", href: "/admin/users", icon: Users },
-        { title: "Settings", href: "/settings", icon: Settings },
-    ]
 
     // Filter options derived dynamically from data
     const availableFactors = ["All", ...Array.from(new Set(issuesData.map(i => i.factor)))]
@@ -104,12 +94,8 @@ export default function IssuesPage() {
     }
 
     return (
-        <ProtectedRoute>
-            <div className="flex h-screen overflow-hidden bg-background text-foreground">
-                <Sidebar navigations={navigations} />
-
-                <main className="flex-1 overflow-y-auto p-8 bg-muted/10">
-                    <div className="mx-auto max-w-6xl">
+        <main className="flex-1 overflow-y-auto p-8 bg-muted/10">
+            <div className="mx-auto max-w-6xl">
                     <h2 className="text-4xl font-extrabold tracking-tight mb-8 mt-2">Issues</h2>
 
                     {/* Grade Summary Card Area */}
@@ -250,9 +236,7 @@ export default function IssuesPage() {
                             </TableBody>
                         </Table>
                     </div>
-                    </div>
-                </main>
             </div>
-        </ProtectedRoute>
+        </main>
     )
 }

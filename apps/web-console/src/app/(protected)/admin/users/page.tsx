@@ -1,10 +1,8 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { Sidebar } from '@/components/sidebar';
-import { ProtectedRoute, useAuth, User } from '@/providers/auth-provider';
+import { useAuth, User } from '@/providers/auth-provider';
 import {
-  LayoutDashboard, ShieldCheck, ShieldAlert, Activity,
   Users as UsersIcon, Settings, Trash2, UserPlus,
   MoreVertical, ChevronDown, Plus, X, Search, AlertTriangle,
 } from 'lucide-react';
@@ -145,15 +143,6 @@ export default function UsersManagementPage() {
     }
   };
 
-  const navigations = [
-    { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { title: 'Score Factor', href: '/score-factor', icon: ShieldCheck },
-    { title: 'Issues portfolio', href: '/issues', icon: ShieldAlert },
-    { title: 'Digital Footprint', href: '/digital-footprint', icon: Activity },
-    { title: 'User Management', href: '/admin/users', icon: UsersIcon, isActive: true },
-    { title: 'Settings', href: '/settings', icon: Settings },
-  ];
-
   const adminCount = users.filter(u => u.role === 'ADMIN').length;
   const userCount = users.length - adminCount;
 
@@ -166,12 +155,8 @@ export default function UsersManagementPage() {
   }, [users, searchQuery, roleFilter]);
 
   return (
-    <ProtectedRoute requireAdmin={true}>
-      <div className="flex h-screen overflow-hidden bg-background">
-        <Sidebar navigations={navigations} />
-
-        <main className="flex-1 overflow-y-auto p-8 bg-white text-gray-900 relative">
-          <div className="mx-auto max-w-6xl space-y-6">
+    <div className="flex-1 overflow-y-auto p-8 bg-white text-gray-900 relative">
+      <div className="mx-auto max-w-6xl space-y-6">
 
             {/* Header */}
             <div className="flex items-center gap-3 border-b border-gray-200 pb-4 mb-6">
@@ -393,9 +378,8 @@ export default function UsersManagementPage() {
                   )}
                 </TableBody>
               </Table>
-            </div>
           </div>
-        </main>
+        </div>
 
         {/* ── Add User Modal ───────────────────────────────────── */}
         {isModalOpen && (
@@ -529,8 +513,6 @@ export default function UsersManagementPage() {
             </div>
           </div>
         )}
-
-      </div>
-    </ProtectedRoute>
+    </div>
   );
 }

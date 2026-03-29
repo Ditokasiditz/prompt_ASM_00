@@ -1,11 +1,9 @@
 'use client'
 
 import React, { useEffect, useState } from "react"
-import { LayoutDashboard, Users, ShieldAlert, Settings, Activity, ShieldCheck, RefreshCw, Globe, MapPin } from "lucide-react"
-import { Sidebar } from "@/components/sidebar"
+import { RefreshCw, Globe, MapPin } from "lucide-react"
 import { WorldMap } from "@/components/world-map"
 import { cn } from "@/lib/utils"
-import { ProtectedRoute } from "@/providers/auth-provider"
 import { API_BASE } from "@/lib/api"
 
 interface Asset {
@@ -72,21 +70,9 @@ export default function DigitalFootprintPage() {
     }
   }
 
-  const navigations = [
-    { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { title: "Score Factor", href: "/score-factor", icon: ShieldCheck },
-    { title: "Issues portfolio", href: "/issues", icon: ShieldAlert },
-    { title: "Digital Footprint", href: "/digital-footprint", icon: Activity, isActive: true },
-    { title: "User Management", href: "/admin/users", icon: Users },
-    { title: "Settings", href: "/settings", icon: Settings },
-  ]
 
   return (
-    <ProtectedRoute>
-      <div className="flex h-screen overflow-hidden bg-[#050B35]">
-        <Sidebar navigations={navigations} />
-
-        <main className="flex-1 overflow-y-auto p-8 relative">
+    <main className="flex-1 overflow-y-auto p-8 relative bg-[#050B35]">
           {/* Abstract Background Elements */}
           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full -z-10 translate-x-1/2 -translate-y-1/2" />
           <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-600/10 blur-[100px] rounded-full -z-10 -translate-x-1/2 translate-y-1/2" />
@@ -214,8 +200,6 @@ export default function DigitalFootprintPage() {
               </div>
             </div>
           </div>
-        </main>
-      </div>
-    </ProtectedRoute>
+    </main>
   )
 }

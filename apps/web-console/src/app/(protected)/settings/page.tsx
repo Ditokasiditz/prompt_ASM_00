@@ -2,9 +2,8 @@
 
 import React, { useState, useRef } from "react"
 import { useTheme } from "next-themes"
-import { LayoutDashboard, Users, ShieldAlert, Settings, Activity, ShieldCheck, User, Moon, Sun, Bell, Monitor, Check, Upload, Loader2 } from "lucide-react"
-import { Sidebar } from "@/components/sidebar"
-import { ProtectedRoute, useAuth } from "@/providers/auth-provider"
+import { Moon, Sun, Bell, Monitor, Check, Upload, Loader2, User } from "lucide-react"
+import { useAuth } from "@/providers/auth-provider"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -24,15 +23,6 @@ export default function SettingsPage() {
   const [highSeverityAlerts, setHighSeverityAlerts] = useState(true)
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const navigations = [
-    { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { title: "Score Factor", href: "/score-factor", icon: ShieldCheck },
-    { title: "Issues portfolio", href: "/issues", icon: ShieldAlert },
-    { title: "Digital Footprint", href: "/digital-footprint", icon: Activity },
-    { title: "User Management", href: "/admin/users", icon: Users },
-    { title: "Settings", href: "/settings", icon: Settings, isActive: true },
-  ]
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -76,12 +66,8 @@ export default function SettingsPage() {
   }
 
   return (
-    <ProtectedRoute>
-      <div className="flex h-screen overflow-hidden bg-background">
-        <Sidebar navigations={navigations} />
-
-        <main className="flex-1 overflow-y-auto p-8">
-          <div className="mx-auto max-w-4xl space-y-8">
+    <main className="flex-1 overflow-y-auto p-8">
+      <div className="mx-auto max-w-4xl space-y-8">
             <div>
               <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
               <p className="text-muted-foreground mt-2">
@@ -310,9 +296,7 @@ export default function SettingsPage() {
                 </Card>
               </TabsContent>
             </Tabs>
-          </div>
-        </main>
       </div>
-    </ProtectedRoute>
+    </main>
   )
 }

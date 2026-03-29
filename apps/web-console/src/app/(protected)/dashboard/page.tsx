@@ -1,0 +1,68 @@
+'use client'
+
+import React, { useEffect, useState } from "react"
+import { ScoreGrade } from "@/components/score-grade"
+import { FactorBreakdown } from "@/components/factor-breakdown"
+import { SeverityPieChart } from "@/components/severity-pie-chart"
+import { API_BASE } from "@/lib/api"
+
+interface Factor {
+  title: string
+  score: number
+  issueCount: number
+}
+
+interface DashboardData {
+  score: number
+  grade: string
+  factors: Factor[]
+}
+
+export default function DashboardPage() {
+  const [data, setData] = useState<DashboardData | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/dashboard/summary`)
+      .then(res => res.json())
+      .then(dashboardData => {
+        setData(dashboardData)
+        setLoading(false)
+      })
+      .catch(error => {
+        console.error('Error fetching dashboard data', error)
+        setLoading(false)
+      })
+  }, [])
+
+  if (loading || !data) {
+    return (
+      <main className="flex-1 overflow-y-auto bg-muted/10 p-8 flex items-center justify-center">
+        <p className="text-muted-foreground animate-pulse">Loading dashboard data...</p>
+      </main>
+    )
+  }
+
+  return (
+    <main className="flex-1 overflow-y-auto bg-muted/10 p-8">
+      <div className="mx-auto max-w-6xl space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Attack Surface Summary</h1>
+          <p className="text-muted-foreground mt-2">
+            Continuous monitoring of your external attack surface and threat landscape.
+          </p>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          <ScoreGrade score={data.score} grade={data.grade} />
+          <SeverityPieChart />
+        </div>
+
+        <div className="mt-8">
+          <h2 className="text-xl font-semibold mb-4 tracking-tight text-foreground/80">Factor Breakdown</h2>
+          <FactorBreakdown factorData={data.factors} />
+        </div>
+      </div>
+    </main>
+  )
+}

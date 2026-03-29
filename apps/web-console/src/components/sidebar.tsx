@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from "react"
+import Link from "next/link"
 import { LucideIcon, ChevronLeft, ChevronRight, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/providers/auth-provider"
@@ -51,7 +52,7 @@ export function Sidebar({ className, navigations }: SidebarProps) {
 
                     <div className="space-y-1.5 mt-4">
                         {navigations.map((item) => (
-                            <a
+                            <Link
                                 key={item.href}
                                 href={item.href}
                                 title={isCollapsed ? item.title : undefined}
@@ -69,7 +70,7 @@ export function Sidebar({ className, navigations }: SidebarProps) {
                                         {item.title}
                                     </span>
                                 )}
-                            </a>
+                            </Link>
                         ))}
                     </div>
                 </div>

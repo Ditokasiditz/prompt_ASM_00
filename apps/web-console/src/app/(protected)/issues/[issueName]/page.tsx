@@ -2,11 +2,9 @@
 
 import React, { useEffect, useState, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { LayoutDashboard, Users, ShieldAlert, Settings, Activity, ArrowLeft, Tag, MessageSquare, X, Loader2, ShieldCheck } from "lucide-react"
-import { Sidebar } from "@/components/sidebar"
+import { ArrowLeft, Tag, MessageSquare, X, Loader2 } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
-import { ProtectedRoute } from "@/providers/auth-provider"
 import { API_BASE as API } from "@/lib/api"
 const MAX_COMMENT = 500
 
@@ -196,23 +194,11 @@ export default function IssueFindingsPage() {
             })
     }, [issueName])
 
-    const navigations = [
-        { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-        { title: "Score Factor", href: "/score-factor", icon: ShieldCheck },
-        { title: "Issues portfolio", href: "/issues", icon: ShieldAlert, isActive: true },
-        { title: "Digital Footprint", href: "/assets", icon: Activity },
-        { title: "User Management", href: "/admin/users", icon: Users },
-        { title: "Settings", href: "/settings", icon: Settings },
-    ]
-
     const activeAsset = issue?.findings.find(f => f.assetId === activeCommentAssetId) ?? null
 
     return (
-        <ProtectedRoute>
-            <div className="flex h-screen overflow-hidden bg-background text-foreground">
-                <Sidebar navigations={navigations} />
-
-                {/* Comment popup */}
+        <>
+            {/* Comment popup */}
                 {activeCommentAssetId !== null && activeAsset && issue && (
                     <CommentPopup
                         issueId={issue.id.toString()}
@@ -361,7 +347,6 @@ export default function IssueFindingsPage() {
                         </>
                     ) : null}
                 </main>
-            </div>
-        </ProtectedRoute>
+        </>
     )
 }
