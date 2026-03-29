@@ -6,6 +6,7 @@ import { authenticateToken } from '../middlewares/auth.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
+
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key';
 
 // @route   POST /api/auth/login
@@ -47,6 +48,7 @@ router.post('/login', async (req, res) => {
         id: user.id,
         username: user.username,
         role: user.role,
+        avatar: user.avatar,
       },
     });
   } catch (error) {
@@ -62,9 +64,29 @@ router.post('/logout', (req, res) => {
 });
 
 // @route   GET /api/auth/me
-// @desc    Get current logged in user info
-router.get('/me', authenticateToken, (req: any, res) => {
-  res.json({ user: req.user });
+// @desc    Get current logged in user info (fetches fresh data from DB including avatar)
+router.get('/me', authenticateToken, async (req: any, res) => {
+  try {
+    const userId = req.user.userId;
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        username: true,
+        role: true,
+        avatar: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({ user });
+  } catch (error) {
+    console.error('Get me error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 export default router;
