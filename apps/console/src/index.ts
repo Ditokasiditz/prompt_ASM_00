@@ -14,8 +14,21 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3001;
 
+// Allow both local dev and deployed frontend origins
+const allowedOrigins = [
+  'http://localhost:3000',
+  process.env.CORS_ORIGIN,
+].filter(Boolean) as string[];
+
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. curl, Postman) or matched origins
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS: origin ${origin} not allowed`));
+    }
+  },
   credentials: true
 }));
 app.use(cookieParser());
@@ -33,6 +46,11 @@ app.get('/api/health', (req: Request, res: Response) => {
     res.json({ status: 'ok', message: 'ASM Backend is running' });
 });
 
-app.listen(port, () => {
+// Only start HTTP server in local dev (not in serverless)
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
-});
+  });
+}
+
+export default app;
