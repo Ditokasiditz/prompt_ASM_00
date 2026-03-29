@@ -22,15 +22,15 @@ export function Sidebar({ className, navigations }: SidebarProps) {
     return (
         <div 
             className={cn(
-                "sticky top-0 pb-6 h-screen border-r border-[#1a237e]/30 bg-gradient-to-b from-[#050B35] to-[#0B1247] flex flex-col text-white transition-all duration-300 ease-in-out relative z-20 shrink-0", 
+                "sticky top-0 pb-6 h-screen border-r border-[#1a237e]/30 bg-gradient-to-b from-[#0e0d4b] to-[#070626] flex flex-col text-white transition-all duration-300 ease-in-out relative z-20 shrink-0", 
                 isCollapsed ? "w-20" : "w-64",
                 className
             )}
         >
-            {/* Collapse Toggle Button - customized to dark blue #0B1247 to match sidebar and slightly larger */}
+            {/* Collapse Toggle Button - customized to dark blue #0e0d4b to match sidebar and slightly larger */}
             <button
                 onClick={() => setIsCollapsed(!isCollapsed)}
-                className="absolute -right-4 top-7 flex h-8 w-8 items-center justify-center rounded-full border border-[#1a237e]/50 bg-[#0B1247] shadow-md text-white/70 hover:text-white hover:bg-[#1a237e] transition-colors z-30"
+                className="absolute -right-4 top-7 flex h-8 w-8 items-center justify-center rounded-full border border-[#1a237e]/50 bg-[#0e0d4b] shadow-md text-white/70 hover:text-white hover:bg-[#1a237e] transition-colors z-30"
             >
                 {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
             </button>
@@ -39,8 +39,9 @@ export function Sidebar({ className, navigations }: SidebarProps) {
                 <div className="px-3 py-2">
                     {/* Header Logo area matching the design */}
                     <div className={cn("flex items-center gap-3 mb-8 px-2 mt-2 transition-all duration-300", isCollapsed ? "justify-center" : "")}>
-                        <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center border border-white/10 shadow-inner shrink-0">
-                            <span className="text-xl font-bold text-white">E</span>
+                        <div className="w-10 h-10 flex items-center justify-center shrink-0">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src="/logo.png" alt="App Logo" className="w-full h-full object-contain drop-shadow-lg" />
                         </div>
                         {!isCollapsed && (
                             <div className="flex flex-col whitespace-nowrap overflow-hidden transition-opacity duration-300 opacity-100">
