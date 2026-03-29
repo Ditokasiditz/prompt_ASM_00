@@ -78,10 +78,14 @@ export function Sidebar({ className, navigations }: SidebarProps) {
             <div className={cn("py-4 border-t border-white/10 mt-auto transition-all duration-300", isCollapsed ? "px-0 flex justify-center" : "px-6")}>
                 <div className={cn("flex items-center justify-between gap-3 w-full", isCollapsed ? "justify-center" : "")}>
                     <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 shrink-0 rounded-full bg-white/10 flex items-center justify-center border border-white/10">
-                            <span className="text-xs font-semibold text-white">
-                                {user?.username?.substring(0, 2).toUpperCase() || "GU"}
-                            </span>
+                        <div className="h-8 w-8 shrink-0 rounded-full bg-white/10 flex items-center justify-center border border-white/10 overflow-hidden">
+                            {user?.avatar ? (
+                                <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                            ) : (
+                                <span className="text-xs font-semibold text-white">
+                                    {user?.username?.substring(0, 2).toUpperCase() || "GU"}
+                                </span>
+                            )}
                         </div>
                         {!isCollapsed && (
                             <div className="flex flex-col whitespace-nowrap overflow-hidden transition-opacity duration-300 opacity-100">

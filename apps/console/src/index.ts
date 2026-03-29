@@ -7,6 +7,7 @@ import assetRoutes from './routes/assets.js';
 import factorRoutes from './routes/factors.js';
 import authRoutes from './routes/auth.js';
 import userRoutes from './routes/users.js';
+import profileRoutes from './routes/profile.js';
 import cookieParser from 'cookie-parser';
 
 dotenv.config();
@@ -32,7 +33,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(cookieParser());
-app.use(express.json());
+app.use(express.json({ limit: '2mb' })); // Increased limit to allow base64 image uploads
 
 // API Routes
 app.use('/api/dashboard', dashboardRoutes);
@@ -41,6 +42,7 @@ app.use('/api/assets', assetRoutes);
 app.use('/api/factors', factorRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/profile', profileRoutes);
 
 app.get('/api/health', (req: Request, res: Response) => {
     res.json({ status: 'ok', message: 'ASM Backend is running' });
