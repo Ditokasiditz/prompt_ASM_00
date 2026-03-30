@@ -40,5 +40,13 @@ export const SCANNER_MODULES = [
     impact: 5.0,
     factor: 'Application Security',
     description: "Session Cookie Missing 'HttpOnly' Attribute. The web application sets session cookies without the 'HttpOnly' flag, allowing potential attackers to steal session tokens via Cross-Site Scripting (XSS)."
+  },
+  {
+    moduleName: 'session_cookie_secure',
+    title: "Session Cookie Missing 'Secure' Attribute",
+    severity: 'Medium',
+    impact: 5.0,
+    factor: 'Application Security',
+    description: "Session Cookie Missing 'Secure' Attribute. The web application sets session cookies without the 'Secure' flag, allowing the cookie to be transmitted over unencrypted HTTP connections, increasing the risk of Man-in-the-Middle (MITM) attacks."
   }
 ];
