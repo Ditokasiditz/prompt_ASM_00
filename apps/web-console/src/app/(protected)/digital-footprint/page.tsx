@@ -1,9 +1,11 @@
 'use client'
 
 import React, { useEffect, useState } from "react"
-import { RefreshCw, Globe, MapPin } from "lucide-react"
+import { RefreshCw, Globe, MapPin, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search } from "lucide-react"
 import { WorldMap } from "@/components/world-map"
 import { cn } from "@/lib/utils"
+
+const PAGE_SIZE_OPTIONS = [5, 10, 25, 50, 100]
 import { API_BASE } from "@/lib/api"
 
 interface Asset {
@@ -27,6 +29,14 @@ export default function DigitalFootprintPage() {
   const [assets, setAssets] = useState<Asset[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState<number | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+  const [searchQuery, setSearchQuery] = useState("")
+
+  // Reset to page 1 whenever pageSize or searchQuery changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [pageSize, searchQuery])
 
   const fetchAssets = async (fullSync: boolean = false) => {
     setLoading(true)
@@ -49,6 +59,17 @@ export default function DigitalFootprintPage() {
   useEffect(() => {
     fetchAssets()
   }, [])
+
+  const filteredAssets = assets.filter(asset => 
+    asset.hostname.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (asset.ipAddress && asset.ipAddress.includes(searchQuery))
+  )
+
+  const totalPages = Math.max(1, Math.ceil(filteredAssets.length / pageSize))
+  const safePage = Math.min(currentPage, totalPages)
+  const startIndex = (safePage - 1) * pageSize
+  const endIndex = Math.min(startIndex + pageSize, filteredAssets.length)
+  const paginatedAssets = filteredAssets.slice(startIndex, endIndex)
 
   const handleRefresh = async (id: number) => {
     setRefreshing(id)
@@ -111,7 +132,20 @@ export default function DigitalFootprintPage() {
 
             {/* Table Section */}
             <div className="space-y-4">
-              <h2 className="text-xl font-bold text-white/90">Infrastructure Details</h2>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <h2 className="text-xl font-bold text-white/90">Infrastructure Details</h2>
+                {/* Search / Filter */}
+                <div className="relative w-full sm:w-72">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search hostname or IP..."
+                    className="pl-9 pr-4 py-2 w-full bg-white/5 border border-white/10 rounded-xl text-white/80 placeholder-white/30 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all font-mono"
+                  />
+                </div>
+              </div>
               <div className="bg-[#0B1247]/40 border border-white/10 rounded-2xl overflow-hidden backdrop-blur-md shadow-2xl">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
@@ -138,7 +172,7 @@ export default function DigitalFootprintPage() {
                           </td>
                         </tr>
                       ) : (
-                        assets.map((asset) => (
+                        paginatedAssets.map((asset) => (
                           <tr key={asset.id} className="hover:bg-white/5 transition-colors group">
                             <td className="px-6 py-4">
                               <div className="flex flex-col">
@@ -197,6 +231,139 @@ export default function DigitalFootprintPage() {
                     </tbody>
                   </table>
                 </div>
+
+                {/* ── Pagination footer ── */}
+                {!loading && assets.length > 0 && (
+                  <div className="px-5 py-3 border-t border-white/5 bg-white/[0.02] flex flex-col sm:flex-row items-center justify-between gap-3">
+
+                    {/* Left: rows per page */}
+                    <div className="flex items-center gap-2 text-xs text-white/40">
+                      <span>Rows per page:</span>
+                      <div className="relative">
+                        <select
+                          id="page-size-select"
+                          value={pageSize}
+                          onChange={e => setPageSize(Number(e.target.value))}
+                          className={cn(
+                            'appearance-none pl-3 pr-7 py-1.5 rounded-lg text-xs font-semibold text-white/70',
+                            'bg-white/5 border border-white/10 hover:bg-white/10',
+                            'focus:outline-none focus:ring-1 focus:ring-blue-500/40 cursor-pointer transition-all'
+                          )}
+                        >
+                          {PAGE_SIZE_OPTIONS.map(n => (
+                            <option key={n} value={n} className="bg-[#0B1247] text-white">
+                              {n}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-white/30 rotate-90 pointer-events-none" />
+                      </div>
+                    </div>
+
+                    {/* Centre: range label */}
+                    <span className="text-xs text-white/50 font-mono select-none">
+                      {filteredAssets.length === 0
+                        ? '0 results'
+                        : `${startIndex + 1}–${endIndex} of ${filteredAssets.length}`}
+                    </span>
+
+                    {/* Right: page navigation */}
+                    <div className="flex items-center gap-1">
+                      {/* First page */}
+                      <button
+                        id="page-first-btn"
+                        onClick={() => setCurrentPage(1)}
+                        disabled={safePage === 1}
+                        className={cn(
+                          'p-1.5 rounded-lg transition-all',
+                          safePage === 1
+                            ? 'text-white/15 cursor-not-allowed'
+                            : 'text-white/40 hover:text-white hover:bg-white/10'
+                        )}
+                        title="First page"
+                      >
+                        <ChevronsLeft className="w-4 h-4" />
+                      </button>
+
+                      {/* Prev page */}
+                      <button
+                        id="page-prev-btn"
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={safePage === 1}
+                        className={cn(
+                          'p-1.5 rounded-lg transition-all',
+                          safePage === 1
+                            ? 'text-white/15 cursor-not-allowed'
+                            : 'text-white/40 hover:text-white hover:bg-white/10'
+                        )}
+                        title="Previous page"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+
+                      {/* Page number pills */}
+                      {Array.from({ length: totalPages }, (_, i) => i + 1)
+                        .filter(p => p === 1 || p === totalPages || Math.abs(p - safePage) <= 1)
+                        .reduce<(number | 'ellipsis')[]>((acc, p, i, arr) => {
+                          if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push('ellipsis')
+                          acc.push(p)
+                          return acc
+                        }, [])
+                        .map((item, i) =>
+                          item === 'ellipsis' ? (
+                            <span key={`ellipsis-${i}`} className="px-1 text-white/20 text-xs select-none">
+                              …
+                            </span>
+                          ) : (
+                            <button
+                              key={item}
+                              onClick={() => setCurrentPage(item as number)}
+                              className={cn(
+                                'min-w-[28px] h-7 px-1.5 rounded-lg text-xs font-semibold transition-all',
+                                item === safePage
+                                  ? 'bg-blue-500 text-white shadow-md shadow-blue-500/30'
+                                  : 'text-white/40 hover:text-white hover:bg-white/10'
+                              )}
+                            >
+                              {item}
+                            </button>
+                          )
+                        )}
+
+                      {/* Next page */}
+                      <button
+                        id="page-next-btn"
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={safePage === totalPages}
+                        className={cn(
+                          'p-1.5 rounded-lg transition-all',
+                          safePage === totalPages
+                            ? 'text-white/15 cursor-not-allowed'
+                            : 'text-white/40 hover:text-white hover:bg-white/10'
+                        )}
+                        title="Next page"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+
+                      {/* Last page */}
+                      <button
+                        id="page-last-btn"
+                        onClick={() => setCurrentPage(totalPages)}
+                        disabled={safePage === totalPages}
+                        className={cn(
+                          'p-1.5 rounded-lg transition-all',
+                          safePage === totalPages
+                            ? 'text-white/15 cursor-not-allowed'
+                            : 'text-white/40 hover:text-white hover:bg-white/10'
+                        )}
+                        title="Last page"
+                      >
+                        <ChevronsRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
