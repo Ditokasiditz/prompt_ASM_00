@@ -74,6 +74,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = () => {
     localStorage.removeItem('auth_token');
+    // Clear all session-scoped data (e.g. discovery results cache)
+    sessionStorage.clear();
     setUser(null);
     router.push('/login');
   };

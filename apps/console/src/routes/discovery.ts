@@ -55,15 +55,15 @@ router.post('/subdomains', async (req: Request, res: Response) => {
  * POST /api/discovery/save-assets
  * Body: { domain: string, subdomains: string[] }
  *
- * Upserts every subdomain into the Asset table with type = "subdomain".
- * Uses the unique `hostname` field as the upsert key, so re-running discovery
- * on the same target cleanly overwrites existing records without creating duplicates.
+ * Clears ALL existing assets for the root domain (hostname === rootDomain OR
+ * hostname ends with ".rootDomain"), then inserts the freshly discovered records.
  *
- * Also upserts the root domain itself as type = "domain" if not already present.
+ * This guarantees the Assets table always reflects the most recent scan result
+ * and never accumulates stale / removed subdomains from previous runs.
  *
  * Response:
  * {
- *   saved: number,      // total upserted (new + updated)
+ *   saved: number,      // total inserted (root domain + subdomains)
  *   domain: string
  * }
  */
@@ -86,35 +86,40 @@ router.post('/save-assets', async (req: Request, res: Response) => {
   const rootDomain = domain.trim().toLowerCase();
 
   try {
+    // ── STEP 1: Clear all existing assets for this domain ──────────────────
+    // Delete every record whose hostname IS the root domain OR ends with
+    // ".{rootDomain}" (i.e. all previously saved subdomains for this target).
+    const deleted = await prisma.asset.deleteMany({
+      where: {
+        OR: [
+          { hostname: rootDomain },
+          { hostname: { endsWith: `.${rootDomain}` } },
+        ],
+      },
+    });
+    console.log(`[Discovery] Cleared ${deleted.count} existing assets for root domain: ${rootDomain}`);
+
     let saved = 0;
 
-    // 1. Upsert the root domain itself as type "domain"
-    await prisma.asset.upsert({
-      where:  { hostname: rootDomain },
-      update: { type: 'domain', discoveredAt: new Date() },
-      create: { hostname: rootDomain, type: 'domain', isExposed: false },
+    // ── STEP 2: Insert the root domain itself as type "domain" ──────────────
+    await prisma.asset.create({
+      data: { hostname: rootDomain, type: 'domain', isExposed: false },
     });
     saved++;
 
-    // 2. Upsert every subdomain — batch using Promise.all for speed
-    //    We chunk to avoid overwhelming the DB connection pool on very large lists
+    // ── STEP 3: Insert every subdomain — chunked to avoid pool exhaustion ───
     const CHUNK_SIZE = 50;
     for (let i = 0; i < subdomains.length; i += CHUNK_SIZE) {
       const chunk = subdomains.slice(i, i + CHUNK_SIZE);
 
-      await Promise.all(
-        chunk.map((hostname: string) =>
-          prisma.asset.upsert({
-            where:  { hostname: hostname.trim().toLowerCase() },
-            update: { type: 'subdomain', discoveredAt: new Date() },
-            create: {
-              hostname: hostname.trim().toLowerCase(),
-              type: 'subdomain',
-              isExposed: false,
-            },
-          })
-        )
-      );
+      await prisma.asset.createMany({
+        data: chunk.map((hostname: string) => ({
+          hostname: hostname.trim().toLowerCase(),
+          type: 'subdomain',
+          isExposed: false,
+        })),
+        skipDuplicates: true,
+      });
 
       saved += chunk.length;
     }

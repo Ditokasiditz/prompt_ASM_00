@@ -25,21 +25,49 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
 const PAGE_SIZE_OPTIONS = [5, 10, 25, 50, 100]
 
+const SESSION_KEY = 'discovery_session'
+
+interface SessionSnapshot {
+  inputValue: string
+  result: DiscoveryResult | null
+  saveStatus: SaveStatus
+  savedCount: number
+}
+
+function loadSession(): SessionSnapshot | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY)
+    return raw ? (JSON.parse(raw) as SessionSnapshot) : null
+  } catch {
+    return null
+  }
+}
+
 export default function DiscoveryPage() {
-  const [inputValue, setInputValue] = useState('')
-  const [status, setStatus] = useState<Status>('idle')
-  const [result, setResult] = useState<DiscoveryResult | null>(null)
+  // Rehydrate from sessionStorage on first render
+  const initial = loadSession()
+
+  const [inputValue, setInputValue] = useState(initial?.inputValue ?? '')
+  const [status, setStatus] = useState<Status>(initial?.result ? 'success' : 'idle')
+  const [result, setResult] = useState<DiscoveryResult | null>(initial?.result ?? null)
   const [errorMsg, setErrorMsg] = useState('')
   const [filter, setFilter] = useState('')
   const [copied, setCopied] = useState<string | null>(null)
-  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
-  const [savedCount, setSavedCount] = useState(0)
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>(initial?.saveStatus ?? 'idle')
+  const [savedCount, setSavedCount] = useState(initial?.savedCount ?? 0)
 
   // Pagination state
   const [pageSize, setPageSize] = useState(10)
   const [currentPage, setCurrentPage] = useState(1)
 
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // Persist session state whenever key values change
+  useEffect(() => {
+    const snapshot: SessionSnapshot = { inputValue, result, saveStatus, savedCount }
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(snapshot))
+  }, [inputValue, result, saveStatus, savedCount])
 
   // Reset to page 1 whenever filter or pageSize changes
   useEffect(() => {
