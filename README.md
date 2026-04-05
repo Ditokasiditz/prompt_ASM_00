@@ -5,56 +5,90 @@ This project is an Attack Surface Management (ASM) / External Attack Surface Man
 
 It empowers security operations teams by providing visibility into security grades, asset inventories, risk levels, and vulnerability reports through an intuitive dashboard.
 
-### Tech Stack
-The frontend is a modern web application built using:
-- **[Next.js](https://nextjs.org/)** (React framework with App Router)
+---
+
+## 🛠️ Tech Stack
+
+### Frontend (`apps/web-console`)
+- **[Next.js 15](https://nextjs.org/)** (React framework with App Router)
 - **React 19**
 - **Tailwind CSS v4** for utility-first styling
-- **[Lucide React](https://lucide.dev/)** for beautiful icons
-- **[Recharts](https://recharts.org/)** for data visualization and charts
+- **[Lucide React](https://lucide.dev/)** for icons
+- **[Recharts](https://recharts.org/)** for data visualization
 
-## Project Structure
-The codebase follows a structured architecture, with the main frontend application located locally at:
+### Backend (`apps/console`)
+- **Node.js & Express.js** (REST API)
+- **[Prisma ORM](https://www.prisma.io/)**
+- **PostgreSQL via [Neon](https://neon.tech/)** (Serverless Database)
+- **JWT & Bcrypt** for secure authentication
+- **Python 3** for modular vulnerability scanning scripts
+
+---
+
+## 📂 Project Structure
 ```text
-apps/web-console/
+/prompt_ASM_00
+├── apps/
+│   ├── web-console/    # Frontend UI (Next.js)
+│   └── console/        # Backend API (Express)
+│       ├── python_modules/ # Vulnerability scanning scripts
+│       └── prisma/     # DB Schema (PostgreSQL)
+└── PROJECT_ARCHITECTURE.md # Detailed architecture documentation
 ```
 
-## How to Run This Project on Your Computer
+---
 
-### Prerequisites
-Make sure you have [Node.js](https://nodejs.org/) installed on your machine (version 20.x or higher is recommended).
+## 🚀 How to Run This Project
 
-### Installation & Local Development
+### 1. Prerequisites
+- **Node.js** (v20.x or higher)
+- **Python 3.x**
+- **Neon/PostgreSQL** Connection String (set in `.env`)
 
-1. **Open your terminal and navigate to the project directory**
-   If you aren't already in the frontend directory, navigate to it:
+### 2. Backend Setup (`apps/console`)
+1. Navigate to the backend directory:
    ```bash
-   cd apps/web-console
+   cd apps/console
    ```
-
-2. **Install Dependencies**
-   Install all the required node modules using standard npm:
+2. Install dependencies:
    ```bash
    npm install
    ```
-
-3. **Run the Development Server**
-   Start the local Next.js development server:
+3. Configure your `.env` file with `DATABASE_URL` and `SHODAN_API_KEY`.
+4. Generate Prisma client:
+   ```bash
+   npx prisma generate
+   ```
+5. Run the development server:
    ```bash
    npm run dev
    ```
 
-4. **View the Application**
-   Open your favorite web browser and navigate to [http://localhost:3000](http://localhost:3000) to interact with the web console. The page will hot-reload automatically as you make changes to the code.
+### 3. Frontend Setup (`apps/web-console`)
+1. Navigate to the frontend directory:
+   ```bash
+   cd apps/web-console
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+4. Access the dashboard at [http://localhost:3000](http://localhost:3000).
 
-## Building for Production
+---
 
-To create an optimized production build of the dashboard, navigate to `apps/web-console` and run:
-```bash
-npm run build
-```
+## 🛡️ Vulnerability Scanning
+The system utilizes a custom Python engine located at `apps/console/python_modules` to perform active scanning on targets. This includes checks for:
+- SSL/TLS vulnerabilities (OpenSSL)
+- HTTP/HTTPS redirect misconfigurations
+- Anonymous FTP access
+- Insecure session cookie attributes
 
-After the build completes, you can start the production server to test it locally:
-```bash
-npm run start
-```
+---
+
+## 🏗️ Building for Production
+To create an optimized production build, run `npm run build` in both `apps/console` and `apps/web-console` directories.
