@@ -6,13 +6,17 @@ const prisma = new PrismaClient();
 
 router.get('/summary', async (req: Request, res: Response) => {
     try {
-        const factors = await prisma.factor.findMany({
-            select: {
-                title: true,
-                score: true,
-                issueCount: true
-            }
-        });
+        const [factors, assetCount, exposedCount] = await Promise.all([
+            prisma.factor.findMany({
+                select: {
+                    title: true,
+                    score: true,
+                    issueCount: true
+                }
+            }),
+            prisma.asset.count(),
+            prisma.asset.count({ where: { isExposed: true } }),
+        ]);
 
         // Calculate overall score based on the frontend logic
         const overallScore = factors.length > 0
@@ -27,7 +31,9 @@ router.get('/summary', async (req: Request, res: Response) => {
         res.json({
             score: overallScore,
             grade: overallGrade,
-            factors
+            factors,
+            assetCount,
+            exposedCount,
         });
     } catch (error) {
         console.error('Error fetching dashboard summary:', error);
